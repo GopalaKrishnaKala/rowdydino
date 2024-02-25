@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 #import base64
 import matplotlib.pyplot as plt
 from pandas.plotting import lag_plot
@@ -58,14 +58,40 @@ with tab1:
     
         return flight_df, hotel_df
 
+    def get_busyness(startDate, n, csv_filename):
+
+        busy_df = pd.read_csv(csv_filename, index_col='Date')
+        #print(busy_df)
+
+        busytotal = 0.0
+        busycount = 0
+
+        for i in range(0,n):
+    
+            busy = busy_df.loc[startDate.strftime('%Y-%m-%d')].values[0]
+            if busy != 0:
+                busycount += 1
+                busytotal += busy
+            startDate += timedelta(days=1)
+        if busycount == 0:
+            return 0
+        return round(((busytotal/busycount)*(10/55)))
+
+    
+
     # Function to find the top 5 cheapest stays with separate totals for flights and hotels
     def find_cheapest_stays_separate_totals(flight_df, hotel_df, month, n, top_k=5):
         combined_df = pd.merge(flight_df, hotel_df, on='Date')
         combined_df['Flight Total'] = combined_df['Price']
         combined_df['Hotel Total'] = combined_df['avg_price'] * n
         combined_df['Total Cost'] = combined_df['Flight Total'] + combined_df['Hotel Total']
+        
     
         combined_df['Date'] = pd.to_datetime(combined_df['Date'])
+        #hotel_df['check_in']
+
+        ##print(busyness)
+        
         combined_df = combined_df[combined_df['Date'].dt.month == month]
     
         stays = []
@@ -81,9 +107,14 @@ with tab1:
     
         formatted_stays = []
         for start_date, end_date, flight_total, hotel_total, cost in top_stays:
+            startDate = start_date
+            n = days_visit
+            csv_filename='thrill-data-sixflags (2).csv'
+            busyness = get_busyness(startDate, n, csv_filename)
+            
             formatted_stays.append(f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}: "
                                f"Flight total = ${flight_total:.2f}, Hotel total = ${hotel_total:.2f}, "
-                               f"Total estimated cost = ${cost:.2f}")
+                               f"Total estimated cost = ${cost:.2f},"f"Six Flags Busyness Index={busyness:2f}")
     
         return formatted_stays
     flight_df, hotel_df = read_data(flight_file_path, hotel_file_path)
