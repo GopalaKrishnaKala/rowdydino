@@ -9,7 +9,7 @@ params = {
   "outbound_date": "2024-02-28",
   "currency": "USD",
   "hl": "en",
-  "api_key": "9c33b6d3138a844039b1f7eb0d24ae02f93a03b72c0110f14742dad2ae801512",
+  "api_key": "ENTER HERE",
   "gl": "us",
   "adults": "1",
   "type": "2"
